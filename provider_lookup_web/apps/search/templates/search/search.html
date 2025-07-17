@@ -1,0 +1,34 @@
+<!-- search/templates/search/search.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Provider Lookup</title>
+</head>
+<body>
+    <h1>Provider Lookup</h1>
+
+    <form method="get">
+        <input type="text" name="q" value="{{ query }}" placeholder="Enter provider name or NPI">
+        <button type="submit">Search</button>
+    </form>
+
+    <hr>
+
+    {% if results %}
+        <ul>
+        {% for provider in results %}
+            <li>
+                <strong>{{ provider.provider_name }}</strong><br>
+                NPI: {{ provider.npi }}<br>
+                Address: {{ provider.city }}, {{ provider.state }} {{ provider.postal_code }}<br>
+                Category: {{ provider.classification }} - {{ provider.specialization }}
+            </li>
+            <hr>
+        {% endfor %}
+        </ul>
+    {% elif query %}
+        <p>No results found.</p>
+    {% endif %}
+</body>
+</html>

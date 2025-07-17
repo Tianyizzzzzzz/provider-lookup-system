@@ -1,0 +1,414 @@
+<!-- templates/search/search.html (修复计数部分) -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Search Form -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-search"></i> Healthcare Provider Search
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="GET" id="searchForm">
+                        <!-- Main Search Area -->
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <label class="form-label">Search Type</label>
+                                <select name="search_type" class="form-select" id="searchType">
+                                    <option value="all" {% if search_type == 'all' %}selected{% endif %}>All Fields</option>
+                                    <option value="npi" {% if search_type == 'npi' %}selected{% endif %}>NPI Number</option>
+                                    <option value="name" {% if search_type == 'name' %}selected{% endif %}>Provider Name</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Search Query</label>
+                                <input type="text"
+                                       class="form-control form-control-lg"
+                                       name="query"
+                                       placeholder="Enter NPI, provider name, or organization..."
+                                       value="{{ query }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">City</label>
+                                <input type="text"
+                                       class="form-control"
+                                       name="city"
+                                       placeholder="Enter city..."
+                                       value="{{ city }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">State</label>
+                                <select name="state" class="form-select">
+                                    {% for state_code, state_name in states %}
+                                    <option value="{{ state_code }}" {% if state == state_code %}selected{% endif %}>
+                                        {{ state_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearForm()">
+                                        <i class="fas fa-times"></i> Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search Tips -->
+                        <div class="row">
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>Search Tips:</strong>
+                                    • NPI Search: Enter 10-digit number for exact match
+                                    • Name Search: Supports partial matching
+                                    • Location Search: Can be used alone or combined with other criteria
+                                    • Results limited to 50 providers per page
+                                </small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Results -->
+    {% if results %}
+    <div class="row">
+        <div class="col-12">
+            <!-- Results Statistics -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-list"></i>
+                    Found <strong>{{ total_count }}</strong> matching provider{{ total_count|pluralize }}
+                    {% if showing_limited %}
+                    <span class="badge bg-warning">Showing first 50 results</span>
+                    {% endif %}
+                    {% if is_paginated %}
+                    (Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }})
+                    {% endif %}
+                </div>
+                <div>
+                    <a href="?{{ request.GET.urlencode }}&export=csv" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-download"></i> Export CSV
+                    </a>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-bordered" id="providersTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col" width="100">NPI</th>
+                            <th scope="col" width="80">Type</th>
+                            <th scope="col" width="150">Name/Organization</th>
+                            <th scope="col" width="80">First Name</th>
+                            <th scope="col" width="80">Last Name</th>
+                            <th scope="col" width="100">Credential</th>
+                            <th scope="col" width="200">Address</th>
+                            <th scope="col" width="80">City</th>
+                            <th scope="col" width="50">State</th>
+                            <th scope="col" width="80">ZIP Code</th>
+                            <th scope="col" width="100">Phone</th>
+                            <th scope="col" width="200">Primary Specialty</th>
+                            <th scope="col" width="80">Taxonomy Code</th>
+                            <th scope="col" width="80">Enrollment Date</th>
+                            <th scope="col" width="80">Last Update</th>
+                            <th scope="col" width="60">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for provider in results %}
+                        <tr>
+                            <!-- NPI -->
+                            <td>
+                                <strong>{{ provider.npi }}</strong>
+                            </td>
+
+                            <!-- Entity Type -->
+                            <td>
+                                {% if provider.entity_type == 'Individual' %}
+                                <span class="badge bg-success">Individual</span>
+                                {% else %}
+                                <span class="badge bg-info">Organization</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Name/Organization -->
+                            <td>
+                                {% if provider.entity_type == 'Individual' %}
+                                    {{ provider.first_name }} {{ provider.last_name }}
+                                {% else %}
+                                    {{ provider.organization_name }}
+                                {% endif %}
+                            </td>
+
+                            <!-- First Name -->
+                            <td>{{ provider.first_name|default:"-" }}</td>
+
+                            <!-- Last Name -->
+                            <td>{{ provider.last_name|default:"-" }}</td>
+
+                            <!-- Credential -->
+                            <td>{{ provider.credential|default:"-" }}</td>
+
+                            <!-- Address -->
+                            <td>
+                                {% if provider.addresses.all %}
+                                {% with provider.addresses.all.0 as address %}
+                                    {{ address.address_line_1 }}
+                                    {% if address.address_line_2 %}
+                                    <br><small>{{ address.address_line_2 }}</small>
+                                    {% endif %}
+                                {% endwith %}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+
+                            <!-- City -->
+                            <td>
+                                {% if provider.addresses.all %}
+                                    {{ provider.addresses.all.0.city }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+
+                            <!-- State -->
+                            <td>
+                                {% if provider.addresses.all %}
+                                    {{ provider.addresses.all.0.state }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+
+                            <!-- ZIP Code -->
+                            <td>
+                                {% if provider.addresses.all %}
+                                    {{ provider.addresses.all.0.postal_code }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+
+                            <!-- Phone -->
+                            <td>{{ provider.phone|default:"-" }}</td>
+
+                            <!-- Primary Specialty -->
+                            <td>
+                                {% if provider.taxonomies.all %}
+                                    {% with primary_taxonomy=provider.taxonomies.all|first %}
+                                        {% for taxonomy in provider.taxonomies.all %}
+                                            {% if taxonomy.is_primary %}
+                                                {{ taxonomy.taxonomy_code.classification }}
+                                            {% endif %}
+                                        {% empty %}
+                                            {{ primary_taxonomy.taxonomy_code.classification }}
+                                        {% endfor %}
+                                    {% endwith %}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+
+                            <!-- Taxonomy Code -->
+                            <td>
+                                {% if provider.taxonomies.all %}
+                                    {% with primary_taxonomy=provider.taxonomies.all|first %}
+                                        {% for taxonomy in provider.taxonomies.all %}
+                                            {% if taxonomy.is_primary %}
+                                                {{ taxonomy.taxonomy_code.code }}
+                                            {% endif %}
+                                        {% empty %}
+                                            {{ primary_taxonomy.taxonomy_code.code }}
+                                        {% endfor %}
+                                    {% endwith %}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+
+                            <!-- Enrollment Date -->
+                            <td>{{ provider.enumeration_date|default:"-" }}</td>
+
+                            <!-- Last Update -->
+                            <td>{{ provider.last_update_date|default:"-" }}</td>
+
+                            <!-- Status -->
+                            <td>
+                                {% if provider.deactivation_date %}
+                                <span class="badge bg-danger">Inactive</span>
+                                {% else %}
+                                <span class="badge bg-success">Active</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Search results pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+
+    {% elif query or city or state %}
+    <!-- No Results -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="alert alert-warning text-center">
+                <i class="fas fa-search"></i>
+                <h5>No matching results found</h5>
+                <p class="mb-0">Please try:</p>
+                <ul class="list-unstyled">
+                    <li>• Check if the entered information is correct</li>
+                    <li>• Use fewer search terms</li>
+                    <li>• Try different search types</li>
+                    <li>• Use broader location criteria</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Table styling */
+#providersTable {
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+#providersTable th {
+    position: sticky;
+    top: 0;
+    background-color: #212529 !important;
+    z-index: 10;
+}
+
+#providersTable td {
+    vertical-align: middle;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#providersTable td:hover {
+    background-color: #f8f9fa;
+    overflow: visible;
+    white-space: normal;
+}
+
+.table-responsive {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Print styles */
+@media print {
+    .card-header, .btn, .pagination {
+        display: none !important;
+    }
+
+    .table {
+        font-size: 10px !important;
+    }
+
+    .table td, .table th {
+        padding: 2px !important;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #providersTable {
+        font-size: 0.75rem;
+    }
+
+    #providersTable td {
+        max-width: 150px;
+    }
+}
+</style>
+
+<script>
+// Clear form function
+function clearForm() {
+    document.getElementById('searchForm').reset();
+    window.location.href = '/';
+}
+
+// Search type change handler
+document.getElementById('searchType').addEventListener('change', function() {
+    const input = document.querySelector('input[name="query"]');
+    const type = this.value;
+
+    switch(type) {
+        case 'npi':
+            input.placeholder = 'Enter 10-digit NPI number...';
+            break;
+        case 'name':
+            input.placeholder = 'Enter provider name or organization...';
+            break;
+        default:
+            input.placeholder = 'Enter NPI, provider name, or organization...';
+    }
+});
+
+// Table row highlighting
+document.querySelectorAll('#providersTable tbody tr').forEach(row => {
+    row.addEventListener('mouseenter', function() {
+        this.style.backgroundColor = '#e3f2fd';
+    });
+
+    row.addEventListener('mouseleave', function() {
+        this.style.backgroundColor = '';
+    });
+});
+</script>
+{% endblock %}

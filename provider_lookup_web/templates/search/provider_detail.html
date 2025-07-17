@@ -1,0 +1,195 @@
+<!-- templates/search/provider_detail.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <!-- 返回按钮 -->
+            <div class="mb-3">
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回搜索结果
+                </a>
+            </div>
+
+            <!-- 提供者信息卡片 -->
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-md"></i> 提供者详细信息
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- 基本信息 -->
+                        <div class="col-md-8">
+                            <h5 class="text-primary">基本信息</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td width="150"><strong>NPI号码:</strong></td>
+                                    <td>{{ provider.npi }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>提供者类型:</strong></td>
+                                    <td>
+                                        <span class="badge bg-{{ provider.entity_type|lower == 'individual'|yesno:'success,info' }}">
+                                            {{ provider.entity_type|yesno:'个人,机构' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% if provider.entity_type == 'Individual' %}
+                                <tr>
+                                    <td><strong>姓名:</strong></td>
+                                    <td>{{ provider.first_name }} {{ provider.last_name }}</td>
+                                </tr>
+                                {% if provider.credential %}
+                                <tr>
+                                    <td><strong>证书:</strong></td>
+                                    <td>{{ provider.credential }}</td>
+                                </tr>
+                                {% endif %}
+                                {% else %}
+                                <tr>
+                                    <td><strong>机构名称:</strong></td>
+                                    <td>{{ provider.organization_name }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if provider.phone %}
+                                <tr>
+                                    <td><strong>电话:</strong></td>
+                                    <td>{{ provider.phone }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if provider.fax %}
+                                <tr>
+                                    <td><strong>传真:</strong></td>
+                                    <td>{{ provider.fax }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if provider.enumeration_date %}
+                                <tr>
+                                    <td><strong>注册日期:</strong></td>
+                                    <td>{{ provider.enumeration_date }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if provider.last_update_date %}
+                                <tr>
+                                    <td><strong>最后更新:</strong></td>
+                                    <td>{{ provider.last_update_date }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+
+                        <!-- 状态信息 -->
+                        <div class="col-md-4">
+                            <h5 class="text-primary">状态信息</h5>
+                            <div class="alert alert-{{ provider.deactivation_date|yesno:'danger,success' }}">
+                                <i class="fas fa-{{ provider.deactivation_date|yesno:'times-circle,check-circle' }}"></i>
+                                {{ provider.deactivation_date|yesno:'已停用,活跃' }}
+                                {% if provider.deactivation_date %}
+                                <br><small>停用日期: {{ provider.deactivation_date }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 地址信息 -->
+            {% if addresses %}
+            <div class="card shadow mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-map-marker-alt"></i> 地址信息
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for address in addresses %}
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3">
+                                <h6 class="text-primary">
+                                    <i class="fas fa-building"></i>
+                                    {{ address.get_address_type_display }}
+                                </h6>
+                                <address class="mb-0">
+                                    {% if address.address_line_1 %}{{ address.address_line_1 }}<br>{% endif %}
+                                    {% if address.address_line_2 %}{{ address.address_line_2 }}<br>{% endif %}
+                                    {{ address.city }}, {{ address.state }} {{ address.postal_code }}<br>
+                                    {{ address.country_code }}
+                                </address>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 专业信息 -->
+            {% if taxonomies %}
+            <div class="card shadow mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-stethoscope"></i> 专业信息
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for taxonomy in taxonomies %}
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3 {% if taxonomy.is_primary %}border-warning{% endif %}">
+                                {% if taxonomy.is_primary %}
+                                <div class="float-end">
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-star"></i> 主要专业
+                                    </span>
+                                </div>
+                                {% endif %}
+                                <h6 class="text-success">
+                                    <i class="fas fa-user-md"></i>
+                                    {{ taxonomy.taxonomy_code.classification }}
+                                </h6>
+                                <p class="text-muted mb-1">
+                                    <small><strong>代码:</strong> {{ taxonomy.taxonomy_code.code }}</small>
+                                </p>
+                                {% if taxonomy.taxonomy_code.specialization %}
+                                <p class="text-muted mb-1">
+                                    <small><strong>专业化:</strong> {{ taxonomy.taxonomy_code.specialization }}</small>
+                                </p>
+                                {% endif %}
+                                {% if taxonomy.license_number %}
+                                <p class="text-muted mb-0">
+                                    <small><strong>执照号:</strong> {{ taxonomy.license_number }} ({{ taxonomy.license_number_state }})</small>
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 操作按钮 -->
+            <div class="mt-4 text-center">
+                <a href="{% url 'search:search' %}" class="btn btn-primary">
+                    <i class="fas fa-search"></i> 新搜索
+                </a>
+                <button class="btn btn-outline-info" onclick="window.print()">
+                    <i class="fas fa-print"></i> 打印
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn, .card-header {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}
