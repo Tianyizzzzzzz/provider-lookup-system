@@ -1,13 +1,13 @@
 """
-合并端点脚本
-将endpoint_pfile.csv中的端点信息合并到provider数据中
+Endpoint merging script
+Merge endpoint information from endpoint_pfile.csv into provider data
 """
 
 import pandas as pd
 import os
 import sys
 
-# 添加utils模块到路径
+# Add utils module to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 
 from utils import (
@@ -18,14 +18,14 @@ from utils import (
 
 
 def process_endpoints_chunk(chunk_df, endpoints_data):
-    """处理endpoint数据块"""
+    """Process endpoint data chunk"""
     for npi, group in chunk_df.groupby('NPI'):
         if npi not in endpoints_data:
             endpoints_data[npi] = []
 
         for _, row in group.iterrows():
             endpoint = {}
-            # 提取endpoint信息
+            # Extract endpoint information
             endpoint_fields = {
                 'Endpoint': 'endpoint_url',
                 'Endpoint Type': 'endpoint_type',
@@ -38,16 +38,16 @@ def process_endpoints_chunk(chunk_df, endpoints_data):
                 if old_field in row and pd.notna(row[old_field]):
                     endpoint[new_field] = str(row[old_field]).strip()
 
-            if endpoint:  # 只添加非空的endpoint
+            if endpoint:  # Only add non-empty endpoints
                 endpoints_data[npi].append(endpoint)
 
 
 def merge_endpoints():
     """
-    合并端点数据到provider数据中
+    Merge endpoint data into provider data
     """
 
-    # 文件路径配置
+    # File path configuration
     data_dir = r"D:\EMRTS\PROVIDER_LOOKUP\data\nppes\NPPES_Data_Dissemination_June_2025_V2"
     output_dir = r"D:\EMRTS\PROVIDER_LOOKUP\output"
 
@@ -55,68 +55,68 @@ def merge_endpoints():
     endpoint_file = os.path.join(data_dir, "endpoint_pfile_20050523-20250608.csv")
     output_file = os.path.join(output_dir, "provider_with_endpoints.json")
 
-    log_progress("开始合并端点数据")
+    log_progress("Starting endpoint data merging")
 
-    # 检查输入文件
+    # Check input files
     if not os.path.exists(input_file):
-        log_progress(f"错误：输入数据文件不存在: {input_file}")
-        log_progress("请先运行 2_merge_locations.py")
+        log_progress(f"Error: Input data file does not exist: {input_file}")
+        log_progress("Please run 2_merge_locations.py first")
         return False
 
     if not os.path.exists(endpoint_file):
-        log_progress(f"警告：端点文件不存在: {endpoint_file}")
-        log_progress("将跳过端点合并，直接复制现有数据")
+        log_progress(f"Warning: Endpoint file does not exist: {endpoint_file}")
+        log_progress("Will skip endpoint merging and copy existing data directly")
 
-        # 直接复制现有数据
+        # Copy existing data directly
         try:
             provider_data = load_json(input_file)
-            # 为每条记录添加空的endpoints字段
+            # Add empty endpoints field to each record
             for record in provider_data:
                 record['endpoints'] = []
 
             save_json_streaming(provider_data, output_file)
-            log_progress("现有数据复制完成（无端点）")
+            log_progress("Existing data copied successfully (without endpoints)")
             return True
         except Exception as e:
-            log_progress(f"复制现有数据时出错: {e}")
+            log_progress(f"Error copying existing data: {e}")
             return False
 
     try:
-        # 1. 读取现有provider数据
+        # 1. Read existing provider data
         provider_data = load_json(input_file)
 
-        # 2. 处理端点文件
-        log_progress("正在处理端点文件")
+        # 2. Process endpoint file
+        log_progress("Processing endpoint file")
 
-        # 检查文件大小决定处理方式
+        # Check file size to decide processing method
         file_size_mb = check_file_size(endpoint_file)
-        log_progress(f"端点文件大小: {file_size_mb:.2f} MB")
+        log_progress(f"Endpoint file size: {file_size_mb:.2f} MB")
 
         endpoints_data = {}
         chunk_size = 10000
 
-        if file_size_mb > 500:  # 大文件使用分块处理
-            log_progress("使用分块处理端点文件")
+        if file_size_mb > 500:  # Use chunk processing for large files
+            log_progress("Using chunk processing for endpoint file")
             chunks = read_csv_chunked(
                 endpoint_file,
                 chunk_size=chunk_size,
                 dtype={'NPI': str}
             )
 
-            for chunk_num, chunk_df in track_chunk_processing(chunks, chunk_size, "处理端点"):
+            for chunk_num, chunk_df in track_chunk_processing(chunks, chunk_size, "Processing endpoints"):
                 process_endpoints_chunk(chunk_df, endpoints_data)
         else:
-            log_progress("直接读取端点文件")
+            log_progress("Reading endpoint file directly")
             endpoint_df = read_csv_full(endpoint_file, dtype={'NPI': str})
-            log_progress(f"端点文件记录数: {len(endpoint_df):,}")
+            log_progress(f"Endpoint file records: {len(endpoint_df):,}")
             process_endpoints_chunk(endpoint_df, endpoints_data)
 
-        log_progress(f"端点处理完成，涉及 {len(endpoints_data):,} 个NPI")
+        log_progress(f"Endpoint processing completed, involving {len(endpoints_data):,} NPIs")
 
-        # 3. 合并数据
-        log_progress("正在合并端点到provider数据")
+        # 3. Merge data
+        log_progress("Merging endpoints into provider data")
 
-        tracker = ProgressTracker(len(provider_data), 100000, "合并端点")
+        tracker = ProgressTracker(len(provider_data), 100000, "Merging endpoints")
 
         merged_count = 0
         for record in provider_data:
@@ -131,32 +131,32 @@ def merge_endpoints():
 
         tracker.finish()
 
-        log_progress(f"合并完成:")
-        log_progress(f"  包含端点的记录: {merged_count:,}")
-        log_progress(f"  总记录数: {len(provider_data):,}")
-        log_progress(f"  端点覆盖率: {(merged_count / len(provider_data) * 100):.2f}%")
+        log_progress(f"Merging completed:")
+        log_progress(f"  Records with endpoints: {merged_count:,}")
+        log_progress(f"  Total records: {len(provider_data):,}")
+        log_progress(f"  Endpoint coverage rate: {(merged_count / len(provider_data) * 100):.2f}%")
 
-        # 4. 保存合并后的数据
+        # 4. Save merged data
         save_json_streaming(provider_data, output_file)
 
-        # 显示示例记录
+        # Display sample record
         sample_keys = ['npi', 'provider_name', 'primary_taxonomy_code', 'additional_locations', 'endpoints']
         print_sample_record(provider_data, sample_keys)
 
-        log_progress("端点合并完成")
+        log_progress("Endpoint merging completed")
         return True
 
     except Exception as e:
-        log_progress(f"处理过程中出错: {e}")
+        log_progress(f"Error during processing: {e}")
         return False
 
 
 if __name__ == "__main__":
     success = merge_endpoints()
     if success:
-        print("\n✅ 端点合并成功完成！")
-        print("输出文件: D:\\EMRTS\\PROVIDER_LOOKUP\\output\\provider_with_endpoints.json")
-        print("下一步: 运行 4_enrich_taxonomy.py")
+        print("\n✅ Endpoint merging completed successfully!")
+        print("Output file: D:\\EMRTS\\PROVIDER_LOOKUP\\output\\provider_with_endpoints.json")
+        print("Next step: Run 4_enrich_taxonomy.py")
     else:
-        print("\n❌ 端点合并失败")
+        print("\n❌ Endpoint merging failed")
         sys.exit(1)

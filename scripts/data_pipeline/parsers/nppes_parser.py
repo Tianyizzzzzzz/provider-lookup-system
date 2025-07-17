@@ -1,13 +1,13 @@
 """
-NPPES主数据解析脚本
-从npidata_pfile.csv中提取基础provider信息
+NPPES main data parsing script
+Extract basic provider information from npidata_pfile.csv
 """
 
 import pandas as pd
 import os
 import sys
 
-# 添加utils模块到路径
+# Add utils module to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 
 from utils import (
@@ -18,19 +18,19 @@ from utils import (
 
 def parse_nppes_main():
     """
-    解析NPPES主数据文件
+    Parse NPPES main data file
     """
 
-    # 文件路径配置
+    # File path configuration
     data_dir = r"D:\EMRTS\PROVIDER_LOOKUP\data\nppes\NPPES_Data_Dissemination_June_2025_V2"
     output_dir = r"D:\EMRTS\PROVIDER_LOOKUP\output"
 
     main_file = os.path.join(data_dir, "npidata_pfile_20050523-20250608.csv")
     output_file = os.path.join(output_dir, "base_provider_data.json")
 
-    log_progress("开始解析NPPES主数据")
+    log_progress("Starting NPPES main data parsing")
 
-    # 定义需要提取的列
+    # Define columns to extract
     main_columns = {
         'NPI': 'npi',
         'Entity Type Code': 'entity_type_code',
@@ -48,18 +48,18 @@ def parse_nppes_main():
     }
 
     try:
-        # 检查可用列
+        # Check available columns
         available_columns = get_available_columns(main_file, main_columns)
 
         if not available_columns:
-            log_progress("错误：没有找到任何需要的列")
+            log_progress("Error: No required columns found")
             return False
 
-        # 分块读取主文件
+        # Read main file in chunks
         chunk_size = 10000
         main_data_list = []
 
-        log_progress("开始分块读取主文件")
+        log_progress("Starting chunk reading of main file")
         chunks = read_csv_chunked(
             main_file,
             chunk_size=chunk_size,
@@ -67,11 +67,11 @@ def parse_nppes_main():
             usecols=list(available_columns.keys())
         )
 
-        for chunk_num, chunk_df in track_chunk_processing(chunks, chunk_size, "处理主数据"):
-            # 重命名列
+        for chunk_num, chunk_df in track_chunk_processing(chunks, chunk_size, "Processing main data"):
+            # Rename columns
             chunk_df = chunk_df.rename(columns=available_columns)
 
-            # 组合provider名字
+            # Combine provider names
             if 'provider_first_name' in chunk_df.columns and 'provider_last_name' in chunk_df.columns:
                 chunk_df['provider_name'] = chunk_df.apply(
                     lambda row: ' '.join(filter(None, [
@@ -84,7 +84,7 @@ def parse_nppes_main():
                     ])), axis=1
                 )
 
-            # 使用organization_name作为备选名字
+            # Use organization_name as fallback name
             if 'organization_name' in chunk_df.columns:
                 chunk_df['provider_name'] = chunk_df.apply(
                     lambda row: row.get('provider_name', '') if row.get('provider_name', '').strip()
@@ -95,13 +95,13 @@ def parse_nppes_main():
 
             main_data_list.append(chunk_df)
 
-        # 合并所有块
-        log_progress("合并所有数据块")
+        # Merge all chunks
+        log_progress("Merging all data chunks")
         main_data = pd.concat(main_data_list, ignore_index=True)
-        log_progress(f"主数据处理完成，总记录数: {len(main_data):,}")
+        log_progress(f"Main data processing completed, total records: {len(main_data):,}")
 
-        # 转换为JSON格式
-        log_progress("转换为JSON格式")
+        # Convert to JSON format
+        log_progress("Converting to JSON format")
         result_data = []
 
         for _, row in main_data.iterrows():
@@ -120,7 +120,7 @@ def parse_nppes_main():
                 'primary_taxonomy_code': row.get('primary_taxonomy_code')
             }
 
-            # 清理空值
+            # Clean empty values
             record = {k: v for k, v in record.items() if v is not None and v != ''}
             if 'primary_address' in record:
                 record['primary_address'] = {k: v for k, v in record['primary_address'].items()
@@ -128,27 +128,27 @@ def parse_nppes_main():
 
             result_data.append(record)
 
-        # 保存结果
+        # Save results
         save_json_streaming(result_data, output_file)
 
-        # 显示示例记录
+        # Display sample record
         sample_keys = ['npi', 'entity_type_code', 'provider_name', 'primary_taxonomy_code']
         print_sample_record(result_data, sample_keys)
 
-        log_progress("主数据解析完成")
+        log_progress("Main data parsing completed")
         return True
 
     except Exception as e:
-        log_progress(f"处理过程中出错: {e}")
+        log_progress(f"Error during processing: {e}")
         return False
 
 
 if __name__ == "__main__":
     success = parse_nppes_main()
     if success:
-        print("\n✅ 主数据解析成功完成！")
-        print("输出文件: D:\\EMRTS\\PROVIDER_LOOKUP\\output\\base_provider_data.json")
-        print("下一步: 运行 2_merge_locations.py")
+        print("\n✅ Main data parsing completed successfully!")
+        print("Output file: D:\\EMRTS\\PROVIDER_LOOKUP\\output\\base_provider_data.json")
+        print("Next step: Run 2_merge_locations.py")
     else:
-        print("\n❌ 主数据解析失败")
+        print("\n❌ Main data parsing failed")
         sys.exit(1)

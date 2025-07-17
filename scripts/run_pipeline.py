@@ -1,6 +1,6 @@
 """
-NPPES数据处理管道控制脚本
-按顺序执行所有数据处理步骤
+NPPES data processing pipeline control script
+Execute all data processing steps in sequence
 """
 
 import os
@@ -11,65 +11,65 @@ from datetime import datetime
 
 def run_script(script_name, script_description):
     """
-    运行指定的脚本
+    Run specified script
 
     Args:
-        script_name: 脚本文件名
-        script_description: 脚本描述
+        script_name: Script file name
+        script_description: Script description
 
     Returns:
-        bool: 是否成功
+        bool: Whether successful
     """
     print(f"\n{'=' * 60}")
-    print(f"步骤: {script_description}")
-    print(f"脚本: {script_name}")
-    print(f"开始时间: {datetime.now()}")
+    print(f"Step: {script_description}")
+    print(f"Script: {script_name}")
+    print(f"Start time: {datetime.now()}")
     print(f"{'=' * 60}")
 
     script_path = os.path.join(os.path.dirname(__file__), script_name)
 
     if not os.path.exists(script_path):
-        print(f"❌ 错误：脚本文件不存在: {script_path}")
+        print(f"❌ Error: Script file does not exist: {script_path}")
         return False
 
     try:
-        # 运行脚本
+        # Run script
         result = subprocess.run([sys.executable, script_path],
                                 capture_output=True,
                                 text=True,
                                 encoding='utf-8')
 
-        # 打印输出
+        # Print output
         if result.stdout:
             print(result.stdout)
 
         if result.stderr:
-            print("错误信息:")
+            print("Error messages:")
             print(result.stderr)
 
         if result.returncode == 0:
-            print(f"✅ {script_description} 完成成功")
+            print(f"✅ {script_description} completed successfully")
             return True
         else:
-            print(f"❌ {script_description} 执行失败 (返回码: {result.returncode})")
+            print(f"❌ {script_description} execution failed (return code: {result.returncode})")
             return False
 
     except Exception as e:
-        print(f"❌ 运行脚本时出错: {e}")
+        print(f"❌ Error running script: {e}")
         return False
 
 
 def check_prerequisites():
-    """检查必要的文件和目录"""
-    print("检查运行环境...")
+    """Check necessary files and directories"""
+    print("Checking runtime environment...")
 
-    # 检查数据目录
+    # Check data directory
     data_dir = r"D:\EMRTS\PROVIDER_LOOKUP\data\nppes\NPPES_Data_Dissemination_June_2025_V2"
     if not os.path.exists(data_dir):
-        print(f"❌ 错误：NPPES数据目录不存在: {data_dir}")
+        print(f"❌ Error: NPPES data directory does not exist: {data_dir}")
         return False
 
-    # 检查主要数据文件
+    # Check main data files
     required_files = [
         "npidata_pfile_20050523-20250608.csv"
     ]
@@ -81,10 +81,10 @@ def check_prerequisites():
             missing_files.append(file)
 
     if missing_files:
-        print(f"❌ 错误：缺少必要的数据文件: {missing_files}")
+        print(f"❌ Error: Missing required data files: {missing_files}")
         return False
 
-    # 检查可选文件
+    # Check optional files
     optional_files = [
         "pl_pfile_20050523-20250608.csv",
         "endpoint_pfile_20050523-20250608.csv"
@@ -93,75 +93,75 @@ def check_prerequisites():
     for file in optional_files:
         file_path = os.path.join(data_dir, file)
         if os.path.exists(file_path):
-            print(f"✅ 找到可选文件: {file}")
+            print(f"✅ Found optional file: {file}")
         else:
-            print(f"⚠️  可选文件不存在: {file} (将跳过相关处理)")
+            print(f"⚠️  Optional file does not exist: {file} (related processing will be skipped)")
 
-    # 检查taxonomy文件
+    # Check taxonomy file
     taxonomy_file = r"D:\EMRTS\PROVIDER_LOOKUP\data\taxonomy\taxonomy.csv"
     if os.path.exists(taxonomy_file):
-        print(f"✅ 找到taxonomy文件: taxonomy.csv")
+        print(f"✅ Found taxonomy file: taxonomy.csv")
     else:
-        print(f"⚠️  Taxonomy文件不存在: {taxonomy_file} (将跳过分类增强)")
+        print(f"⚠️  Taxonomy file does not exist: {taxonomy_file} (classification enrichment will be skipped)")
 
-    print("✅ 环境检查完成")
+    print("✅ Environment check completed")
     return True
 
 
 def run_pipeline(start_from=1):
     """
-    运行完整的数据处理管道
+    Run complete data processing pipeline
 
     Args:
-        start_from: 从第几步开始运行 (1-4)
+        start_from: Which step to start from (1-4)
     """
 
-    # 定义处理步骤
+    # Define processing steps
     steps = [
-        ("1_parse_nppes.py", "解析NPPES主数据"),
-        ("2_merge_locations.py", "合并附加地址"),
-        ("3_merge_endpoints.py", "合并端点信息"),
-        ("4_enrich_taxonomy.py", "Taxonomy分类增强")
+        ("1_parse_nppes.py", "Parse NPPES main data"),
+        ("2_merge_locations.py", "Merge additional addresses"),
+        ("3_merge_endpoints.py", "Merge endpoint information"),
+        ("4_enrich_taxonomy.py", "Taxonomy classification enrichment")
     ]
 
-    print("🚀 NPPES数据处理管道启动")
-    print(f"总步骤数: {len(steps)}")
-    print(f"开始时间: {datetime.now()}")
+    print("🚀 NPPES data processing pipeline started")
+    print(f"Total steps: {len(steps)}")
+    print(f"Start time: {datetime.now()}")
 
     if start_from > 1:
-        print(f"⏭️  从第 {start_from} 步开始")
+        print(f"⏭️  Starting from step {start_from}")
 
-    # 检查环境
+    # Check environment
     if not check_prerequisites():
-        print("\n❌ 环境检查失败，无法继续")
+        print("\n❌ Environment check failed, cannot continue")
         return False
 
     pipeline_start_time = datetime.now()
 
-    # 执行步骤
+    # Execute steps
     for i, (script_name, description) in enumerate(steps[start_from - 1:], start_from):
-        success = run_script(script_name, f"步骤 {i}: {description}")
+        success = run_script(script_name, f"Step {i}: {description}")
 
         if not success:
-            print(f"\n❌ 管道在步骤 {i} 失败，停止执行")
-            print("您可以修复问题后使用以下命令从失败的步骤重新开始:")
+            print(f"\n❌ Pipeline failed at step {i}, stopping execution")
+            print("You can fix the issue and restart from the failed step using:")
             print(f"python run_pipeline.py --start-from {i}")
             return False
 
-    # 管道完成
+    # Pipeline completed
     total_time = datetime.now() - pipeline_start_time
 
-    print(f"\n🎉 NPPES数据处理管道成功完成！")
-    print(f"总用时: {total_time}")
-    print(f"完成时间: {datetime.now()}")
-    print("\n📋 处理结果:")
+    print(f"\n🎉 NPPES data processing pipeline completed successfully!")
+    print(f"Total time: {total_time}")
+    print(f"Completion time: {datetime.now()}")
+    print("\n📋 Processing results:")
 
-    # 显示输出文件信息
+    # Display output file information
     output_files = [
-        ("base_provider_data.json", "基础provider数据"),
-        ("provider_with_locations.json", "包含附加地址的数据"),
-        ("provider_with_endpoints.json", "包含端点的数据"),
-        ("provider_with_taxonomy.json", "最终完整数据")
+        ("base_provider_data.json", "Base provider data"),
+        ("provider_with_locations.json", "Data with additional addresses"),
+        ("provider_with_endpoints.json", "Data with endpoints"),
+        ("provider_with_taxonomy.json", "Final complete data")
     ]
 
     output_dir = r"D:\EMRTS\PROVIDER_LOOKUP\output"
@@ -172,41 +172,41 @@ def run_pipeline(start_from=1):
             file_size = os.path.getsize(filepath) / 1024 / 1024
             print(f"  ✅ {description}: {filename} ({file_size:.2f} MB)")
         else:
-            print(f"  ❌ {description}: {filename} (未生成)")
+            print(f"  ❌ {description}: {filename} (not generated)")
 
     return True
 
 
 def main():
-    """主函数"""
+    """Main function"""
 
-    # 解析命令行参数
+    # Parse command line arguments
     start_from = 1
     if len(sys.argv) > 1:
         if sys.argv[1] == "--help" or sys.argv[1] == "-h":
-            print("NPPES数据处理管道")
-            print("用法:")
-            print("  python run_pipeline.py              # 运行完整管道")
-            print("  python run_pipeline.py --start-from N  # 从第N步开始")
-            print("  python run_pipeline.py --help          # 显示帮助")
-            print("\n步骤说明:")
-            print("  1. 解析NPPES主数据")
-            print("  2. 合并附加地址")
-            print("  3. 合并端点信息")
-            print("  4. Taxonomy分类增强")
+            print("NPPES Data Processing Pipeline")
+            print("Usage:")
+            print("  python run_pipeline.py              # Run complete pipeline")
+            print("  python run_pipeline.py --start-from N  # Start from step N")
+            print("  python run_pipeline.py --help          # Show help")
+            print("\nStep descriptions:")
+            print("  1. Parse NPPES main data")
+            print("  2. Merge additional addresses")
+            print("  3. Merge endpoint information")
+            print("  4. Taxonomy classification enrichment")
             return
 
         elif sys.argv[1] == "--start-from" and len(sys.argv) > 2:
             try:
                 start_from = int(sys.argv[2])
                 if start_from < 1 or start_from > 4:
-                    print("❌ 错误：start-from 参数必须在 1-4 之间")
+                    print("❌ Error: start-from parameter must be between 1-4")
                     return
             except ValueError:
-                print("❌ 错误：start-from 参数必须是数字")
+                print("❌ Error: start-from parameter must be a number")
                 return
 
-    # 运行管道
+    # Run pipeline
     success = run_pipeline(start_from)
 
     if not success:

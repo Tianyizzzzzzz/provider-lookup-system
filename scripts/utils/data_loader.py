@@ -1,6 +1,6 @@
 """
-数据加载工具模块
-提供通用的数据读取和处理功能
+Data loading utility module
+Provides common data reading and processing functionality
 """
 
 import pandas as pd
@@ -9,19 +9,19 @@ import os
 import warnings
 from datetime import datetime
 
-# 抑制pandas的DtypeWarning警告
+# Suppress pandas DtypeWarning warnings
 warnings.filterwarnings('ignore', category=pd.errors.DtypeWarning)
 
 
 def read_csv_chunked(filepath, chunk_size=10000, dtype=None, usecols=None):
     """
-    分块读取CSV文件
+    Read CSV file in chunks
 
     Args:
-        filepath: CSV文件路径
-        chunk_size: 每块大小
-        dtype: 数据类型字典
-        usecols: 要读取的列
+        filepath: CSV file path
+        chunk_size: Size of each chunk
+        dtype: Data type dictionary
+        usecols: Columns to read
 
     Returns:
         Generator of DataFrames
@@ -37,12 +37,12 @@ def read_csv_chunked(filepath, chunk_size=10000, dtype=None, usecols=None):
 
 def read_csv_full(filepath, dtype=None, usecols=None):
     """
-    完整读取CSV文件
+    Read complete CSV file
 
     Args:
-        filepath: CSV文件路径
-        dtype: 数据类型字典
-        usecols: 要读取的列
+        filepath: CSV file path
+        dtype: Data type dictionary
+        usecols: Columns to read
 
     Returns:
         DataFrame
@@ -57,34 +57,34 @@ def read_csv_full(filepath, dtype=None, usecols=None):
 
 def check_file_size(filepath):
     """
-    检查文件大小（MB）
+    Check file size (MB)
 
     Args:
-        filepath: 文件路径
+        filepath: File path
 
     Returns:
-        float: 文件大小（MB）
+        float: File size (MB)
     """
     if not os.path.exists(filepath):
-        raise FileNotFoundError(f"文件不存在: {filepath}")
+        raise FileNotFoundError(f"File does not exist: {filepath}")
 
     return os.path.getsize(filepath) / 1024 / 1024
 
 
 def get_available_columns(filepath, required_columns):
     """
-    检查CSV文件中可用的列
+    Check available columns in CSV file
 
     Args:
-        filepath: CSV文件路径
-        required_columns: 需要的列字典 {原列名: 新列名}
+        filepath: CSV file path
+        required_columns: Required columns dictionary {old_column_name: new_column_name}
 
     Returns:
-        dict: 可用的列字典
+        dict: Available columns dictionary
     """
-    # 读取文件头部来确定列名
+    # Read file header to determine column names
     header_df = pd.read_csv(filepath, nrows=0)
-    print(f"文件包含 {len(header_df.columns)} 列")
+    print(f"File contains {len(header_df.columns)} columns")
 
     available_columns = {}
     missing_columns = []
@@ -96,19 +96,19 @@ def get_available_columns(filepath, required_columns):
             missing_columns.append(old_col)
 
     if missing_columns:
-        print(f"警告: 以下列不存在于文件中: {missing_columns}")
+        print(f"Warning: The following columns do not exist in the file: {missing_columns}")
 
-    print(f"将读取以下列: {list(available_columns.keys())}")
+    print(f"Will read the following columns: {list(available_columns.keys())}")
     return available_columns
 
 
 def log_progress(message, with_timestamp=True):
     """
-    打印带时间戳的日志消息
+    Print log message with timestamp
 
     Args:
-        message: 日志消息
-        with_timestamp: 是否包含时间戳
+        message: Log message
+        with_timestamp: Whether to include timestamp
     """
     if with_timestamp:
         print(f"{message} - {datetime.now()}")
@@ -118,10 +118,10 @@ def log_progress(message, with_timestamp=True):
 
 def ensure_directory(filepath):
     """
-    确保目录存在
+    Ensure directory exists
 
     Args:
-        filepath: 文件路径
+        filepath: File path
     """
     directory = os.path.dirname(filepath)
     if directory:

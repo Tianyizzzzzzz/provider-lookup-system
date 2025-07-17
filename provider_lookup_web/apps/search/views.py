@@ -1,4 +1,4 @@
-# apps/search/views.py (修复计数问题)
+# apps/search/views.py (fixed counting issue)
 from django.shortcuts import render
 from django.db.models import Q
 from django.views.generic import ListView
@@ -81,14 +81,14 @@ class ProviderSearchView(ListView):
         context['city'] = self.request.GET.get('city', '')
         context['state'] = self.request.GET.get('state', '')
 
-        # Search statistics - 修复计数问题
+        # Search statistics - fix counting issue
         if any([context['query'], context['city'], context['state']]):
-            # 获取完整查询集的计数
+            # Get count from complete queryset
             total_queryset = self.get_queryset()
             context['total_count'] = total_queryset.count()
             context['showing_limited'] = context['total_count'] > 50
 
-            # 确保results也有正确的计数
+            # Ensure results also have correct count
             if hasattr(context, 'object_list') and context['object_list']:
                 context['results_count'] = len(context['object_list'])
             else:

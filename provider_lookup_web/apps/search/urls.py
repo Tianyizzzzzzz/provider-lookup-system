@@ -1,4 +1,4 @@
-# apps/search/urls.py (简化版本)
+# apps/search/urls.py
 from django.urls import path
 from . import views
 

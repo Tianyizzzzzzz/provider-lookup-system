@@ -1,13 +1,13 @@
 """
-分类增强脚本
-根据taxonomy代码为provider数据添加classification和specialization信息
+Taxonomy enrichment script
+Add classification and specialization information to provider data based on taxonomy codes
 """
 
 import pandas as pd
 import os
 import sys
 
-# 添加utils模块到路径
+# Add utils module to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 
 from utils import (
@@ -18,41 +18,41 @@ from utils import (
 
 def enrich_taxonomy():
     """
-    使用taxonomy数据增强provider信息
+    Enrich provider information using taxonomy data
     """
 
-    # 文件路径配置
+    # File path configuration
     taxonomy_file = r"D:\EMRTS\PROVIDER_LOOKUP\data\taxonomy\taxonomy.csv"
     input_file = r"D:\EMRTS\PROVIDER_LOOKUP\output\provider_with_endpoints.json"
     output_file = r"D:\EMRTS\PROVIDER_LOOKUP\output\provider_with_taxonomy.json"
 
-    log_progress("开始taxonomy分类增强")
+    log_progress("Starting taxonomy classification enrichment")
 
-    # 检查输入文件
+    # Check input files
     if not os.path.exists(input_file):
-        log_progress(f"错误：输入数据文件不存在: {input_file}")
-        log_progress("请先运行 3_merge_endpoints.py")
+        log_progress(f"Error: Input data file does not exist: {input_file}")
+        log_progress("Please run 3_merge_endpoints.py first")
         return False
 
     if not os.path.exists(taxonomy_file):
-        log_progress(f"错误：taxonomy文件不存在: {taxonomy_file}")
+        log_progress(f"Error: Taxonomy file does not exist: {taxonomy_file}")
         return False
 
     try:
-        # 1. 读取taxonomy数据
-        log_progress("正在读取taxonomy数据")
+        # 1. Read taxonomy data
+        log_progress("Reading taxonomy data")
         taxonomy_df = read_csv_full(taxonomy_file, dtype={'Code': str})
-        log_progress(f"Taxonomy数据加载完成，共 {len(taxonomy_df):,} 条记录")
+        log_progress(f"Taxonomy data loaded successfully, total {len(taxonomy_df):,} records")
 
-        # 显示taxonomy文件的列名
-        log_progress(f"Taxonomy文件列名: {list(taxonomy_df.columns)}")
+        # Display taxonomy file column names
+        log_progress(f"Taxonomy file column names: {list(taxonomy_df.columns)}")
 
-        # 检查关键列是否存在
+        # Check if key columns exist
         if 'Code' not in taxonomy_df.columns:
-            log_progress("错误：taxonomy文件缺少'Code'列")
+            log_progress("Error: Taxonomy file missing 'Code' column")
             return False
 
-        # 智能检测classification和specialization列
+        # Intelligently detect classification and specialization columns
         classification_col = None
         specialization_col = None
 
@@ -63,17 +63,17 @@ def enrich_taxonomy():
             elif ('specialization' in col_lower or 'specialty' in col_lower) and not specialization_col:
                 specialization_col = col
 
-        # 如果没有找到，使用默认假设
+        # Use default assumptions if not found
         if not classification_col and len(taxonomy_df.columns) >= 2:
             classification_col = taxonomy_df.columns[1]
-            log_progress(f"使用 '{classification_col}' 作为classification列")
+            log_progress(f"Using '{classification_col}' as classification column")
 
         if not specialization_col and len(taxonomy_df.columns) >= 3:
             specialization_col = taxonomy_df.columns[2]
-            log_progress(f"使用 '{specialization_col}' 作为specialization列")
+            log_progress(f"Using '{specialization_col}' as specialization column")
 
-        # 创建taxonomy字典用于快速查找
-        log_progress("创建taxonomy查找字典")
+        # Create taxonomy dictionary for fast lookup
+        log_progress("Creating taxonomy lookup dictionary")
         taxonomy_dict = {}
 
         for _, row in taxonomy_df.iterrows():
@@ -86,21 +86,21 @@ def enrich_taxonomy():
                         row[specialization_col]) else ''
                 }
 
-        log_progress(f"Taxonomy字典创建完成，共 {len(taxonomy_dict):,} 个有效代码")
+        log_progress(f"Taxonomy dictionary created successfully, total {len(taxonomy_dict):,} valid codes")
 
-        # 2. 读取provider数据
+        # 2. Read provider data
         provider_data = load_json(input_file)
 
-        # 3. 合并taxonomy信息
-        log_progress("正在合并taxonomy信息")
+        # 3. Merge taxonomy information
+        log_progress("Merging taxonomy information")
 
-        tracker = ProgressTracker(len(provider_data), 100000, "分类增强")
+        tracker = ProgressTracker(len(provider_data), 100000, "Classification enrichment")
 
         matched_count = 0
         unmatched_count = 0
 
         for record in provider_data:
-            # 获取primary_taxonomy_code，安全处理各种数据类型
+            # Get primary_taxonomy_code, safely handle various data types
             taxonomy_code_raw = record.get('primary_taxonomy_code')
 
             if taxonomy_code_raw is None or taxonomy_code_raw == '' or (
@@ -110,13 +110,13 @@ def enrich_taxonomy():
                 taxonomy_code = str(taxonomy_code_raw).strip()
 
             if taxonomy_code and taxonomy_code in taxonomy_dict:
-                # 找到匹配的taxonomy信息
+                # Found matching taxonomy information
                 taxonomy_info = taxonomy_dict[taxonomy_code]
                 record['classification'] = taxonomy_info['classification']
                 record['specialization'] = taxonomy_info['specialization']
                 matched_count += 1
             else:
-                # 没有找到匹配的taxonomy信息
+                # No matching taxonomy information found
                 record['classification'] = ''
                 record['specialization'] = ''
                 unmatched_count += 1
@@ -125,32 +125,32 @@ def enrich_taxonomy():
 
         tracker.finish()
 
-        log_progress(f"分类增强完成:")
-        log_progress(f"  匹配成功: {matched_count:,} 条记录")
-        log_progress(f"  未匹配: {unmatched_count:,} 条记录")
-        log_progress(f"  匹配率: {(matched_count / len(provider_data) * 100):.2f}%")
+        log_progress(f"Classification enrichment completed:")
+        log_progress(f"  Successfully matched: {matched_count:,} records")
+        log_progress(f"  Unmatched: {unmatched_count:,} records")
+        log_progress(f"  Match rate: {(matched_count / len(provider_data) * 100):.2f}%")
 
-        # 4. 保存最终数据
+        # 4. Save final data
         save_json_streaming(provider_data, output_file)
 
-        # 显示示例记录
+        # Display sample record
         sample_keys = ['npi', 'provider_name', 'primary_taxonomy_code', 'classification', 'specialization']
         print_sample_record(provider_data, sample_keys)
 
-        log_progress("Taxonomy分类增强完成")
+        log_progress("Taxonomy classification enrichment completed")
         return True
 
     except Exception as e:
-        log_progress(f"处理过程中出错: {e}")
+        log_progress(f"Error during processing: {e}")
         return False
 
 
 if __name__ == "__main__":
     success = enrich_taxonomy()
     if success:
-        print("\n✅ Taxonomy分类增强成功完成！")
-        print("输出文件: D:\\EMRTS\\PROVIDER_LOOKUP\\output\\provider_with_taxonomy.json")
-        print("🎉 所有数据处理步骤已完成！")
+        print("\n✅ Taxonomy classification enrichment completed successfully!")
+        print("Output file: D:\\EMRTS\\PROVIDER_LOOKUP\\output\\provider_with_taxonomy.json")
+        print("🎉 All data processing steps completed!")
     else:
-        print("\n❌ Taxonomy分类增强失败")
+        print("\n❌ Taxonomy classification enrichment failed")
         sys.exit(1)

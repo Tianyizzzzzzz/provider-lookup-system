@@ -1,6 +1,6 @@
 """
-JSON处理工具模块
-提供JSON文件的读取、写入和批处理功能
+JSON processing utility module
+Provides JSON file reading, writing and batch processing functionality
 """
 
 import json
@@ -10,44 +10,44 @@ from .data_loader import ensure_directory, log_progress
 
 def load_json(filepath):
     """
-    加载JSON文件
+    Load JSON file
 
     Args:
-        filepath: JSON文件路径
+        filepath: JSON file path
 
     Returns:
-        list/dict: JSON数据
+        list/dict: JSON data
     """
-    log_progress(f"正在读取JSON文件: {filepath}")
+    log_progress(f"Reading JSON file: {filepath}")
 
     if not os.path.exists(filepath):
-        raise FileNotFoundError(f"JSON文件不存在: {filepath}")
+        raise FileNotFoundError(f"JSON file does not exist: {filepath}")
 
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             data = json.load(f)
 
         if isinstance(data, list):
-            log_progress(f"JSON文件加载完成，共 {len(data):,} 条记录", False)
+            log_progress(f"JSON file loaded successfully, total {len(data):,} records", False)
         else:
-            log_progress("JSON文件加载完成", False)
+            log_progress("JSON file loaded successfully", False)
 
         return data
 
     except Exception as e:
-        raise Exception(f"读取JSON文件时出错: {e}")
+        raise Exception(f"Error reading JSON file: {e}")
 
 
 def save_json(data, filepath, indent=2):
     """
-    保存数据为JSON文件
+    Save data as JSON file
 
     Args:
-        data: 要保存的数据
-        filepath: 输出文件路径
-        indent: JSON缩进
+        data: Data to save
+        filepath: Output file path
+        indent: JSON indentation
     """
-    log_progress(f"正在保存到 {filepath}")
+    log_progress(f"Saving to {filepath}")
 
     try:
         ensure_directory(filepath)
@@ -55,42 +55,42 @@ def save_json(data, filepath, indent=2):
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=indent)
 
-        # 获取文件大小
+        # Get file size
         file_size_mb = os.path.getsize(filepath) / 1024 / 1024
 
-        log_progress(f"数据保存完成！", False)
-        log_progress(f"输出文件: {filepath}", False)
-        log_progress(f"文件大小: {file_size_mb:.2f} MB", False)
+        log_progress(f"Data saved successfully!", False)
+        log_progress(f"Output file: {filepath}", False)
+        log_progress(f"File size: {file_size_mb:.2f} MB", False)
 
         if isinstance(data, list):
-            log_progress(f"总记录数: {len(data):,}", False)
+            log_progress(f"Total records: {len(data):,}", False)
 
     except Exception as e:
-        raise Exception(f"保存JSON文件时出错: {e}")
+        raise Exception(f"Error saving JSON file: {e}")
 
 
 def save_json_streaming(data, filepath, batch_size=50000):
     """
-    流式保存大型JSON数组
-    适用于大数据集，分批写入以节省内存
+    Stream save large JSON arrays
+    Suitable for large datasets, write in batches to save memory
 
     Args:
-        data: 数据迭代器或列表
-        filepath: 输出文件路径
-        batch_size: 批处理大小
+        data: Data iterator or list
+        filepath: Output file path
+        batch_size: Batch processing size
     """
-    log_progress(f"正在流式保存到 {filepath}")
+    log_progress(f"Streaming save to {filepath}")
 
     try:
         ensure_directory(filepath)
 
         with open(filepath, 'w', encoding='utf-8') as f:
-            f.write('[\n')  # 开始JSON数组
+            f.write('[\n')  # Start JSON array
 
             total_records = 0
             is_first = True
 
-            # 如果是列表，按批次处理
+            # If it's a list, process in batches
             if isinstance(data, list):
                 for i in range(0, len(data), batch_size):
                     batch = data[i:i + batch_size]
@@ -105,32 +105,32 @@ def save_json_streaming(data, filepath, batch_size=50000):
                         total_records += 1
 
                     if (total_records) % 100000 == 0:
-                        log_progress(f"已写入 {total_records:,} 条记录", False)
+                        log_progress(f"Written {total_records:,} records", False)
 
-            f.write('\n]')  # 结束JSON数组
+            f.write('\n]')  # End JSON array
 
-        # 获取文件大小
+        # Get file size
         file_size_mb = os.path.getsize(filepath) / 1024 / 1024
 
-        log_progress(f"流式保存完成！", False)
-        log_progress(f"输出文件: {filepath}", False)
-        log_progress(f"文件大小: {file_size_mb:.2f} MB", False)
-        log_progress(f"总记录数: {total_records:,}", False)
+        log_progress(f"Streaming save completed!", False)
+        log_progress(f"Output file: {filepath}", False)
+        log_progress(f"File size: {file_size_mb:.2f} MB", False)
+        log_progress(f"Total records: {total_records:,}", False)
 
     except Exception as e:
-        raise Exception(f"流式保存JSON文件时出错: {e}")
+        raise Exception(f"Error streaming save JSON file: {e}")
 
 
 def get_sample_record(data, index=0):
     """
-    获取示例记录
+    Get sample record
 
     Args:
-        data: JSON数据
-        index: 记录索引
+        data: JSON data
+        index: Record index
 
     Returns:
-        dict: 示例记录
+        dict: Sample record
     """
     if isinstance(data, list) and len(data) > index:
         return data[index]
@@ -139,22 +139,22 @@ def get_sample_record(data, index=0):
 
 def print_sample_record(data, keys=None, index=0, max_length=50):
     """
-    打印示例记录
+    Print sample record
 
     Args:
-        data: JSON数据
-        keys: 要显示的键列表
-        index: 记录索引
-        max_length: 值的最大显示长度
+        data: JSON data
+        keys: List of keys to display
+        index: Record index
+        max_length: Maximum display length for values
     """
     sample = get_sample_record(data, index)
     if not sample:
-        log_progress("没有可显示的示例记录", False)
+        log_progress("No sample record to display", False)
         return
 
-    log_progress("示例记录:", False)
+    log_progress("Sample record:", False)
 
-    display_keys = keys if keys else list(sample.keys())[:10]  # 默认显示前10个键
+    display_keys = keys if keys else list(sample.keys())[:10]  # Default to first 10 keys
 
     for key in display_keys:
         if key in sample:

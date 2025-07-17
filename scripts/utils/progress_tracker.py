@@ -1,6 +1,6 @@
 """
-进度跟踪工具模块
-提供数据处理进度跟踪功能
+Progress tracking utility module
+Provides data processing progress tracking functionality
 """
 
 import time
@@ -8,16 +8,16 @@ from datetime import datetime, timedelta
 
 
 class ProgressTracker:
-    """进度跟踪器"""
+    """Progress tracker"""
 
-    def __init__(self, total_items, report_interval=100000, task_name="处理"):
+    def __init__(self, total_items, report_interval=100000, task_name="Processing"):
         """
-        初始化进度跟踪器
+        Initialize progress tracker
 
         Args:
-            total_items: 总项目数
-            report_interval: 报告间隔
-            task_name: 任务名称
+            total_items: Total number of items
+            report_interval: Reporting interval
+            task_name: Task name
         """
         self.total_items = total_items
         self.report_interval = report_interval
@@ -26,65 +26,65 @@ class ProgressTracker:
         self.start_time = time.time()
         self.last_report_time = self.start_time
 
-        print(f"开始{self.task_name}，总计 {self.total_items:,} 项")
+        print(f"Starting {self.task_name}, total {self.total_items:,} items")
 
     def update(self, increment=1):
         """
-        更新进度
+        Update progress
 
         Args:
-            increment: 增量
+            increment: Increment amount
         """
         self.processed_items += increment
 
-        # 检查是否需要报告进度
+        # Check if progress report is needed
         if (self.processed_items % self.report_interval == 0 or
                 self.processed_items == self.total_items):
             self._report_progress()
 
     def _report_progress(self):
-        """报告当前进度"""
+        """Report current progress"""
         current_time = time.time()
         elapsed_time = current_time - self.start_time
 
-        # 计算进度百分比
+        # Calculate progress percentage
         progress_percent = (self.processed_items / self.total_items) * 100
 
-        # 计算处理速度
+        # Calculate processing speed
         items_per_second = self.processed_items / elapsed_time if elapsed_time > 0 else 0
 
-        # 估算剩余时间
+        # Estimate remaining time
         if items_per_second > 0:
             remaining_items = self.total_items - self.processed_items
             estimated_remaining_seconds = remaining_items / items_per_second
             estimated_completion = datetime.now() + timedelta(seconds=estimated_remaining_seconds)
-            eta_str = f", 预计完成: {estimated_completion.strftime('%H:%M:%S')}"
+            eta_str = f", ETA: {estimated_completion.strftime('%H:%M:%S')}"
         else:
             eta_str = ""
 
-        print(f"{self.task_name}进度: {self.processed_items:,}/{self.total_items:,} "
+        print(f"{self.task_name} progress: {self.processed_items:,}/{self.total_items:,} "
               f"({progress_percent:.1f}%) - "
-              f"速度: {items_per_second:,.0f} 项/秒{eta_str}")
+              f"Speed: {items_per_second:,.0f} items/sec{eta_str}")
 
     def finish(self):
-        """完成进度跟踪"""
+        """Finish progress tracking"""
         total_time = time.time() - self.start_time
         average_speed = self.processed_items / total_time if total_time > 0 else 0
 
-        print(f"{self.task_name}完成！")
-        print(f"总用时: {total_time:.1f} 秒")
-        print(f"平均速度: {average_speed:,.0f} 项/秒")
-        print(f"总处理项目: {self.processed_items:,}")
+        print(f"{self.task_name} completed!")
+        print(f"Total time: {total_time:.1f} seconds")
+        print(f"Average speed: {average_speed:,.0f} items/sec")
+        print(f"Total processed items: {self.processed_items:,}")
 
 
-def track_chunk_processing(chunks, chunk_size, task_name="处理数据块"):
+def track_chunk_processing(chunks, chunk_size, task_name="Processing data chunks"):
     """
-    跟踪分块处理进度
+    Track chunk processing progress
 
     Args:
-        chunks: 数据块迭代器
-        chunk_size: 每块大小
-        task_name: 任务名称
+        chunks: Data chunk iterator
+        chunk_size: Size of each chunk
+        task_name: Task name
 
     Yields:
         tuple: (chunk_number, chunk_data)
@@ -98,38 +98,38 @@ def track_chunk_processing(chunks, chunk_size, task_name="处理数据块"):
         chunk_size_actual = len(chunk_df)
         total_processed += chunk_size_actual
 
-        # 每10个块或每100万行报告一次进度
+        # Report progress every 10 chunks or every 1 million rows
         if chunk_num % 10 == 0 or total_processed % 1000000 == 0:
             elapsed_time = time.time() - start_time
             speed = total_processed / elapsed_time if elapsed_time > 0 else 0
 
-            print(f"{task_name} - 第 {chunk_num} 块，行数: {chunk_size_actual:,} | "
-                  f"累计处理: {total_processed:,} 行 | "
-                  f"速度: {speed:,.0f} 行/秒")
+            print(f"{task_name} - Chunk {chunk_num}, rows: {chunk_size_actual:,} | "
+                  f"Total processed: {total_processed:,} rows | "
+                  f"Speed: {speed:,.0f} rows/sec")
 
         yield chunk_num, chunk_df
 
-    # 最终报告
+    # Final report
     total_time = time.time() - start_time
     average_speed = total_processed / total_time if total_time > 0 else 0
 
-    print(f"{task_name}完成！")
-    print(f"总块数: {chunk_num:,}")
-    print(f"总行数: {total_processed:,}")
-    print(f"总用时: {total_time:.1f} 秒")
-    print(f"平均速度: {average_speed:,.0f} 行/秒")
+    print(f"{task_name} completed!")
+    print(f"Total chunks: {chunk_num:,}")
+    print(f"Total rows: {total_processed:,}")
+    print(f"Total time: {total_time:.1f} seconds")
+    print(f"Average speed: {average_speed:,.0f} rows/sec")
 
 
 class BatchProcessor:
-    """批处理器"""
+    """Batch processor"""
 
-    def __init__(self, batch_size=50000, task_name="批处理"):
+    def __init__(self, batch_size=50000, task_name="Batch processing"):
         """
-        初始化批处理器
+        Initialize batch processor
 
         Args:
-            batch_size: 批大小
-            task_name: 任务名称
+            batch_size: Batch size
+            task_name: Task name
         """
         self.batch_size = batch_size
         self.task_name = task_name
@@ -139,11 +139,11 @@ class BatchProcessor:
 
     def process_batches(self, data, total_count=None):
         """
-        分批处理数据
+        Process data in batches
 
         Args:
-            data: 数据列表
-            total_count: 总数量（用于进度计算）
+            data: Data list
+            total_count: Total count (for progress calculation)
 
         Yields:
             tuple: (batch_number, batch_data, start_index, end_index)
@@ -158,21 +158,21 @@ class BatchProcessor:
             batch_size_actual = len(batch)
             self.total_processed += batch_size_actual
 
-            # 进度报告
+            # Progress report
             progress_percent = (self.total_processed / total_items) * 100
-            print(f"{self.task_name} - 批次 {self.batch_count} "
+            print(f"{self.task_name} - Batch {self.batch_count} "
                   f"({i:,} - {end_idx:,}) | "
-                  f"进度: {progress_percent:.1f}%")
+                  f"Progress: {progress_percent:.1f}%")
 
             yield self.batch_count, batch, i, end_idx
 
     def finish(self):
-        """完成批处理"""
+        """Finish batch processing"""
         total_time = time.time() - self.start_time
         average_speed = self.total_processed / total_time if total_time > 0 else 0
 
-        print(f"{self.task_name}完成！")
-        print(f"总批次: {self.batch_count}")
-        print(f"总处理项目: {self.total_processed:,}")
-        print(f"总用时: {total_time:.1f} 秒")
-        print(f"平均速度: {average_speed:,.0f} 项/秒")
+        print(f"{self.task_name} completed!")
+        print(f"Total batches: {self.batch_count}")
+        print(f"Total processed items: {self.total_processed:,}")
+        print(f"Total time: {total_time:.1f} seconds")
+        print(f"Average speed: {average_speed:,.0f} items/sec")
