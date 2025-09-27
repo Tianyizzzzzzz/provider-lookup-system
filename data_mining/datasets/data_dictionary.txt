@@ -1,0 +1,19 @@
+HEALTHCARE PROVIDER ML DATASET - DATA DICTIONARY
+============================================================
+
+Dataset Creation: 2025-09-26 10:26:12
+Records: 200,000
+Features: 28
+
+entity_type                   : Individual or Organization
+is_individual                 : Binary: 1 if Individual provider
+is_organization               : Binary: 1 if Organization provider
+is_active                     : Binary: 1 if currently active
+years_since_enumeration       : Years since provider was first enumerated
+has_first_name                : Binary: 1 if first name available
+has_last_name                 : Binary: 1 if last name available
+has_organization_name         : Binary: 1 if organization name available
+has_credential                : Binary: 1 if credential information available
+has_phone                     : Binary: 1 if phone number available
+has_fax                       : Binary: 1 if fax number available
+taxonomy_count                : Number of taxonomy classifications per provider
