@@ -3,7 +3,7 @@
 HEALTHCARE PROVIDER LOOKUP SYSTEM - DATA MINING REPORT
 PHASE 1: DATA EXPLORATION AND FEATURE ENGINEERING
 ==========================================================
-Report Generated: 2025-09-26 10:26:11
+Report Generated: 2025-09-26 23:16:57
 Analysis Type: Stratified Sample Analysis
 Database Size: 8,960,259 total providers
 
@@ -21,7 +21,7 @@ KEY FINDINGS:
 • Activity Status: 200,000 active providers 
   (100.0%), 
   0 deactivated
-• Geographic Coverage: 41 states represented
+• Geographic Coverage: 37 states represented
 • Data Quality: 100.0% complete name information
 
 DETAILED PROVIDER DEMOGRAPHICS:
@@ -41,22 +41,22 @@ Activity Status Analysis:
 GEOGRAPHIC DISTRIBUTION ANALYSIS:
 ----------------------------------------------------------
 Coverage Statistics:
-• States Represented: 41
-• Cities Represented: 129
+• States Represented: 37
+• Cities Represented: 98
 • Address Data Coverage: 0.1% of providers
-• Address Records Available: 151 total records
+• Address Records Available: 112 total records
 
 Top 10 States by Provider Count:
-   1. CA: 13 providers
-   2. TX: 13 providers
+   1. FL: 13 providers
+   2. CA: 10 providers
    3. NY: 10 providers
-   4. FL: 10 providers
-   5. MI: 9 providers
-   6. WV: 7 providers
-   7. PA: 7 providers
-   8. AL: 7 providers
-   9. NJ: 6 providers
-  10. GA: 5 providers
+   4. TX: 8 providers
+   5. OH: 6 providers
+   6. PA: 5 providers
+   7. NC: 5 providers
+   8. VA: 4 providers
+   9. OR: 3 providers
+  10. IA: 3 providers
 
 
 DATA QUALITY ASSESSMENT:
@@ -64,7 +64,7 @@ DATA QUALITY ASSESSMENT:
 Completeness Analysis:
 • Providers with Name Information: 200,000 
   (100.0%)
-• Providers with Address Information: 138 
+• Providers with Address Information: 106 
   (0.1%)
 • Providers with Taxonomy Information: 0 
   (0.0%)
