@@ -1,0 +1,51 @@
+
+================================================================================
+PHASE 2: ADAPTIVE PROVIDER CLUSTERING ANALYSIS
+================================================================================
+Generated: 2025-10-20 18:54:54
+Sample: 120,706 providers (NEW imports only)
+
+FEATURE ENGINEERING:
+--------------------------------------------------------------------------------
+Initial features: 15
+Zero-variance features removed: 7
+  is_individual, is_organization, has_first_name, has_last_name, has_middle_name, has_organization_name, has_credential
+
+Final features: 9
+  has_phone, has_fax, years_since_enumeration, years_since_update, is_active, name_completeness_score, contact_completeness_score, overall_quality_score, cluster
+
+CLUSTERING RESULTS:
+--------------------------------------------------------------------------------
+Optimal k: 3
+Silhouette Score: 0.313
+Clustering Time: 0.0s
+
+CLUSTER PROFILES:
+--------------------------------------------------------------------------------
+
+Cluster 0:
+  Size: 40,044 (33.2%)
+  avg_years_active: 20.2
+  active_rate: 98.3
+  name_completeness_score: 50.0
+  contact_completeness_score: 100.0
+  overall_quality_score: 75.0
+
+Cluster 1:
+  Size: 28,957 (24.0%)
+  avg_years_active: 20.2
+  active_rate: 98.7
+  name_completeness_score: 59.9
+  contact_completeness_score: 61.1
+  overall_quality_score: 60.5
+
+Cluster 2:
+  Size: 51,705 (42.8%)
+  avg_years_active: 20.2
+  active_rate: 97.3
+  name_completeness_score: 67.4
+  contact_completeness_score: 100.0
+  overall_quality_score: 83.7
+
+READY FOR PHASE 3: CLASSIFICATION
+================================================================================
