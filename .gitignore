@@ -123,3 +123,9 @@ yarn-error.log*
 
 # Project specific
 high_quality_npis.json
+# Temporary and old version files
+data_mining/*_fixed.py
+data_mining/*_optimized.py
+data_mining/diagnostic_*.py
+data_mining/simplified_*.py
+project_status_report.py
