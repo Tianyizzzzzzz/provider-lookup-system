@@ -1,0 +1,103 @@
+{
+  "metadata": {
+    "timestamp": "2025-10-21T18:08:43.735717",
+    "sample_size": 150000,
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "data_info": {
+    "n_samples": 120706,
+    "n_features": 9,
+    "feature_names": [
+      "has_last_name",
+      "has_phone",
+      "has_fax",
+      "years_since_enumeration",
+      "years_since_update",
+      "is_active",
+      "name_completeness_score",
+      "contact_completeness_score",
+      "overall_quality_score"
+    ],
+    "n_classes": 3,
+    "class_distribution": {
+      "0": 91749,
+      "2": 24148,
+      "1": 4809
+    }
+  },
+  "best_model": "Logistic Regression",
+  "models": {
+    "Logistic Regression": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "cv_mean": 0.9999896437448218,
+      "cv_std": 2.0712510356268864e-05,
+      "training_time": 4.401435613632202
+    },
+    "Random Forest": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "cv_mean": 1.0,
+      "cv_std": 0.0,
+      "training_time": 4.80308723449707
+    },
+    "Gradient Boosting": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "cv_mean": 1.0,
+      "cv_std": 0.0,
+      "training_time": 26.313706874847412
+    },
+    "SVM": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "cv_mean": 0.9999896437448218,
+      "cv_std": 2.0712510356268864e-05,
+      "training_time": 5.640516996383667
+    }
+  },
+  "feature_importance": {
+    "Logistic Regression": {
+      "has_last_name": 0.015435958172787825,
+      "has_phone": 1.1054176066409507,
+      "has_fax": 3.2313177465972576,
+      "years_since_enumeration": 0.1773650572479487,
+      "years_since_update": 0.29477709924655376,
+      "is_active": 0.9065615949162212,
+      "name_completeness_score": 0.01543595817281312,
+      "contact_completeness_score": 2.9158385608716926,
+      "overall_quality_score": 2.4666212752389813
+    },
+    "Random Forest": {
+      "has_last_name": 0.0,
+      "has_phone": 0.07787617527453532,
+      "has_fax": 0.28099123425376493,
+      "years_since_enumeration": 0.000202314497919726,
+      "years_since_update": 0.0006273097076457159,
+      "is_active": 0.004877158716259916,
+      "name_completeness_score": 1.416661585361328e-12,
+      "contact_completeness_score": 0.42811109370310596,
+      "overall_quality_score": 0.20731471384535186
+    },
+    "Gradient Boosting": {
+      "has_last_name": 0.0,
+      "has_phone": 0.0,
+      "has_fax": 0.0,
+      "years_since_enumeration": 2.857444396790585e-14,
+      "years_since_update": 4.4537139931263306e-13,
+      "is_active": 0.0,
+      "name_completeness_score": 0.0,
+      "contact_completeness_score": 0.999999999999526,
+      "overall_quality_score": 0.0
+    }
+  }
+}
